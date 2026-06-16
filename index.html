@@ -703,90 +703,56 @@
       document.getElementById('game-score-badge').innerText = `⭐ スコア: ${state.gameScore}`;
     }
 
-    // 1. あさのじゅんび
-    let morningData = {
-      text: 'くつしたの かたほうが みつからないぞ！どうする？',
-      options: [
-        { text: '🔍 おもちゃばこを さがす', correct: true, feedback: 'あった！おもちゃばこの おくに おちていたよ！' },
-        { text: '🥱 もういちど ねる', correct: false, feedback: 'ちこくしちゃうぞ！がんばって おきよう！' },
-        { text: '🎒 ランドセルを みる', correct: false, feedback: 'ランドセルのなかには ないみたい…' }
-      ]
-    };
-
-    function initMorningGame() {
-      state.gameStage = 1;
+    function handleMorningChoice(index) {
+  const opt = morningData.options[index];
+  
+  if (opt.correct) {
+    if (state.gameStage === 1) {
+      state.gameScore += 50;
+      state.gameStage = 2;
+      state.gameTimer = 10; // ★ ステージ2は「10秒」に短縮！
       morningData = {
-        text: 'くつしたの かたほうが みつからないぞ！どうする？',
+        text: 'おそとで あめが ふってきた！ なにを もっていく？',
         options: [
-          { text: '🔍 おもちゃばこを さがす', correct: true, feedback: 'あった！おもちゃばこの おくに おちていたよ！' },
-          { text: '🥱 もういちど ねる', correct: false, feedback: 'ちこくしちゃうぞ！がんばって おきよう！' },
-          { text: '🎒 ランドセルを みる', correct: false, feedback: 'ランドセルのなかには ないみたい…' }
+          { text: '🌂 かさ をもっていく', correct: true, feedback: 'せいかい！これで あめがふっても ぬれないね！' },
+          { text: '🧢 ぼうし をかぶる', correct: false, feedback: 'ぼうしだけだと びしょびしょに なっちゃうよ！' },
+          { text: '🏃 はしって いく', correct: false, feedback: 'みちが すべって あぶないよ！' }
         ]
       };
+      updateGameScoreBadge();
       renderMorningUI();
+    } else if (state.gameStage === 2) {
+      state.gameScore += 50;
+      state.gameStage = 3;
+      state.gameTimer = 7; // ★ ステージ3は「7秒」に超短縮！
+      morningData = {
+        text: 'わすれものはないかな？ さいごに ぽけっとに いれるものは？',
+        options: [
+          { text: '🧸 お気に入りのおもちゃ', correct: false, feedback: 'がっこうにおもちゃは もっていけないよ。' },
+          { text: '🤧 はんかち と ちり紙', correct: true, feedback: 'ばっちり！てをあらったあとに つかおうね！' },
+          { text: '🍫 チョコレート', correct: false, feedback: 'おやつは おうちに かえってから たべようね。' }
+        ]
+      };
+      updateGameScoreBadge();
+      renderMorningUI();
+    } else {
+      state.gameScore += 50;
+      updateGameScoreBadge();
+      endGame(true);
     }
+  } else {
+    // ★ 不正解（ハズレ）のペナルティ：残り時間を3秒マイナス！
+    state.gameTimer = Math.max(0, state.gameTimer - 3);
+    
+    // ヘッダーと画面内のタイマーを即座に更新
+    const timerBadge = document.getElementById('game-timer-badge');
+    timerBadge.innerText = `⏳ のこり ${state.gameTimer}びょう`;
+    updateMorningTimerUI();
 
-    function renderMorningUI() {
-      document.getElementById('game-title').innerText = '☀️ あさのじゅんびゲーム';
-      const content = document.getElementById('game-content');
-      content.innerHTML = `
-        <div class="space-y-6 text-center">
-          <div class="text-5xl animate-bounce-short">🎒</div>
-          <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
-            <p class="font-black text-indigo-950 text-md leading-relaxed">
-              ${morningData.text}
-            </p>
-          </div>
-          <div class="grid grid-cols-1 gap-2.5">
-            ${morningData.options.map((opt, i) => `
-              <button onclick="handleMorningChoice(${i})"
-                class="py-3 px-4 bg-white hover:bg-orange-50 border-2 border-orange-100 rounded-xl font-bold text-sm text-left transition-all active:scale-95 shadow-sm">
-                ${opt.text}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    function handleMorningChoice(index) {
-      const opt = morningData.options[index];
-      if (opt.correct) {
-        if (state.gameStage === 1) {
-          state.gameScore += 50;
-          state.gameStage = 2;
-          morningData = {
-            text: 'おそとで あめが ふってきた！ なにを もっていく？',
-            options: [
-              { text: '🌂 かさ をもっていく', correct: true, feedback: 'せいかい！これで あめがふっても ぬれないね！' },
-              { text: '🧢 ぼうし をかぶる', correct: false, feedback: 'ぼうしだけだと びしょびしょに なっちゃうよ！' },
-              { text: '🏃 はしって いく', correct: false, feedback: 'みちが すべって あぶないよ！' }
-            ]
-          };
-          updateGameScoreBadge();
-          renderMorningUI();
-        } else if (state.gameStage === 2) {
-          state.gameScore += 50;
-          state.gameStage = 3;
-          morningData = {
-            text: 'わすれものはないかな？ さいごに ぽけっとに いれるものは？',
-            options: [
-              { text: '🧸 お気に入りのおもちゃ', correct: false, feedback: 'がっこうにおもちゃは もっていけないよ。' },
-              { text: '🤧 はんかち と ちり紙', correct: true, feedback: 'ばっちり！てをあらったあとに つかおうね！' },
-              { text: '🍫 チョコレート', correct: false, feedback: 'おやつは おうちに かえってから たべようね。' }
-            ]
-          };
-          updateGameScoreBadge();
-          renderMorningUI();
-        } else {
-          state.gameScore += 50;
-          updateGameScoreBadge();
-          endGame(true);
-        }
-      } else {
-        showModal('おっとっと！', opt.feedback);
-      }
-    }
+    // 間違えた時のフィードバックを表示
+    showModal('おっとっと！ (-3びょうペナルティ！)', opt.feedback);
+  }
+}
 
     // 2. きゅうしょくとうばん
     function initLunchGame() {
